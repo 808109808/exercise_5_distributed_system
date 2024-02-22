@@ -1,0 +1,42 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# Mock database of bookings
+bookings = [
+    {"id": 1, "name": "John Doe", "room": 101, "check_in": "2024-02-25", "check_out": "2024-02-28"},
+    {"id": 2, "name": "Jane Smith", "room": 102, "check_in": "2024-03-01", "check_out": "2024-03-05"}
+]
+
+@app.route('/api/bookings', methods=['GET'])
+def get_bookings():
+    return jsonify(bookings)
+
+@app.route('/api/bookings/<int:id>', methods=['GET'])
+def get_booking(id):
+    booking = next((b for b in bookings if b['id'] == id), None)
+    return jsonify(booking) if booking else ('', 404)
+
+@app.route('/api/bookings', methods=['POST'])
+def create_booking():
+    new_booking = request.json
+    bookings.append(new_booking)
+    return jsonify(new_booking), 201
+
+@app.route('/api/bookings/<int:id>', methods=['PUT'])
+def update_booking(id):
+    booking = next((b for b in bookings if b['id'] == id), None)
+    if not booking:
+        return ('', 404)
+    update_data = request.json
+    booking.update(update_data)
+    return jsonify(booking)
+
+@app.route('/api/bookings/<int:id>', methods=['DELETE'])
+def delete_booking(id):
+    global bookings
+    bookings = [b for b in bookings if b['id'] != id]
+    return ('', 204)
+
+if __name__ == '__main__':
+    app.run(debug=True)
